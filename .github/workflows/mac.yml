@@ -103,7 +103,7 @@ jobs:
         run: |
           cd $REPO_NAME/out/Debug
           mkdir artifact
-          mv Telegram.app artifact/
+          mv Teamgram.app artifact/
           mv Updater artifact/ || true   # no updater when auto-update is off
       - uses: actions/upload-artifact@v7
         if: env.UPLOAD_ARTIFACT == 'true'
