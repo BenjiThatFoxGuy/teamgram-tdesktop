@@ -58,8 +58,18 @@ jobs:
           restore-keys: ${{ runner.OS }}-${{ runner.arch }}-libs-
 
       - name: Libraries.
+        timeout-minutes: 300
         run: |
           ./$REPO_NAME/Telegram/build/prepare/mac.sh skip-release silent
+
+      - name: Save libraries cache.
+        if: always() && steps.cache-libs.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            Libraries
+            ThirdParty
+          key: ${{ runner.OS }}-${{ runner.arch }}-libs-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}-${{ github.run_id }}
 
       - name: Free up some disk space.
         run: find Libraries '(' '(' ! '(' -name '*.a' -o -name '*.h' -o -name '*.hpp' -o -name '*.inc' -o -name '*.cmake' -o -path '*/include/*' -o -path '*/objects-*' -o -path '*/cache_keys/*' -o -path '*/patches/*' -o -perm +111 ')' -type f ')' -o -empty ')' -delete
@@ -94,7 +104,7 @@ jobs:
           cd $REPO_NAME/out/Debug
           mkdir artifact
           mv Telegram.app artifact/
-          mv Updater artifact/
+          mv Updater artifact/ || true   # no updater when auto-update is off
       - uses: actions/upload-artifact@v7
         if: env.UPLOAD_ARTIFACT == 'true'
         name: Upload artifact.
